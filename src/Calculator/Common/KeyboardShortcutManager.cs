@@ -417,44 +417,31 @@ namespace CalculatorApp
                 lock (s_keyboardShortcutMapLockMutex)
                 {
                     var button = (target as ButtonBase);
-
                     int viewId = Utilities.GetWindowId();
-                    if (s_characterForButtons.TryGetValue(viewId, out var iterViewMap))
-                    {
-                        if (!string.IsNullOrEmpty(oldValue))
-                        {
-                            iterViewMap.Remove(oldValue[0]);
-                        }
 
-                        if (!string.IsNullOrEmpty(newValue))
-                        {
-                            if (newValue == ".")
-                            {
-                                char decSep = LocalizationSettings.GetInstance().GetDecimalSeparator();
-                                Insert(iterViewMap, decSep, new WeakReference(button));
-                            }
-                            else
-                            {
-                                Insert(iterViewMap, newValue[0], new WeakReference(button));
-                            }
-                        }
+                    // Try to get the value from the dictionary s_characterForButtons for the given viewId
+                    // If the key is not found, initialize iterViewMap with a new SortedDictionary and add it to s_characterForButtons
+                    if (!s_characterForButtons.TryGetValue(viewId, out var iterViewMap))
+                    {
+                        iterViewMap = new SortedDictionary<char, List<WeakReference>>();
+                        s_characterForButtons[viewId] = iterViewMap;
                     }
-                    else
-                    {
-                        s_characterForButtons.Add(viewId, new SortedDictionary<char, List<WeakReference>>());
 
-                        if (newValue == ".")
-                        {
-                            char decSep = LocalizationSettings.GetInstance().GetDecimalSeparator();
-                            Insert(s_characterForButtons[viewId], decSep, new WeakReference(button));
-                        }
-                        else
-                        {
-                            Insert(s_characterForButtons[viewId], newValue[0], new WeakReference(button));
-                        }
+                    if (!string.IsNullOrEmpty(oldValue))
+                    {
+                        iterViewMap.Remove(oldValue[0]);
+                    }
+
+                    if (!string.IsNullOrEmpty(newValue))
+                    {
+                        // If the newValue is ".", get the decimal separator from the LocalizationSettings instance
+                        // Otherwise, use the first character of newValue
+                        char key = newValue == "." ? LocalizationSettings.GetInstance().GetDecimalSeparator() : newValue[0];
+                        Insert(iterViewMap, key, new WeakReference(button));
                     }
                 }
             }
+
 
             private static void OnVirtualKeyPropertyChanged(DependencyObject target, MyVirtualKey oldValue, MyVirtualKey newValue)
             {
