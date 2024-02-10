@@ -302,13 +302,10 @@ namespace CalculatorApp
 
                     if (s_fHonorShortcuts.ContainsKey(viewId))
                     {
-                        if (s_fDisableShortcuts.ContainsKey(viewId))
+                        if (s_fDisableShortcuts.TryGetValue(viewId, out bool isDisabled) && isDisabled)
                         {
-                            if (s_fDisableShortcuts[viewId])
-                            {
-                                s_fHonorShortcuts[viewId] = false;
-                                return;
-                            }
+                            s_fHonorShortcuts[viewId] = false;
+                            return;
                         }
 
                         s_fHonorShortcuts[viewId] = allow;
